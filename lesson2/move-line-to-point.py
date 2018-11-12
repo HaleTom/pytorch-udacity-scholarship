@@ -3,29 +3,38 @@
 import sys
 import numpy as np
 
-class MoveLine:
-    def __init__(self):
-        self.x = np.array([1, 1], float)
-        self.w = np.array([3, 4], float)
-        self.b = -10
+class State:
+    def __init__(self, weights, bias):
+        self._weights = np.array(weights, np.float)
+        self._bias = bias
 
-    def weighted_sum(self):
-        return np.add(self.x.dot(self.w), self.b)
+    def weights(self):
+        return self._weights
 
-    def increment_weights(self, alpha=0.1):
-        self.w += np.multiply(alpha, self.x)
-        self.b += alpha
+    def bias(self):
+        return self._bias
 
-    def iterate(self):
-        iteration=1
-        while True:
-            output = self.weighted_sum()
-            print("%-2d: w1=%5.2f w2=%5.2f b=%6.2f output=%6.3f" %
-                    (iteration, self.w[0], self.w[1], self.b, output))
-            self.increment_weights()
-            if output >= 0:
-                break
-            iteration += 1
+    def __str__(self):
+        return "w1=%5.2f w2=%5.2f b=%6.2f" % (self._weights[0], self._weights[1], self._bias)
+
+    def weighted_sum(self, x):
+        return x.dot(self._weights) + self._bias
+
+    def increment_weights(self, x, alpha=0.1):
+        return State(self._weights + np.multiply(alpha, x), self._bias + alpha)
+
+def move_line(x, weights, bias, iteration=1):
+    x = np.array(x, float)
+    current_state = State(weights, bias)
+
+    output = current_state.weighted_sum(x)
+    current_state = current_state.increment_weights(x)
+
+    print("%-2d: %s output=%6.3f" % (iteration, str(current_state), output))
+
+    if output >= 0:
         return iteration
+    # Algorithm is guaranteed to converge
+    return move_line(x, current_state.weights(), current_state.bias(), iteration + 1)
 
-MoveLine().iterate()
+move_line((1, 1), (3, 4), -10)
