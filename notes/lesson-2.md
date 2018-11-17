@@ -172,30 +172,258 @@ The sum of negative logs is called the *cross entropy*.
 
 A bad model will have a high cross entropy.
 
-
 ![l2-cross-entropy](l2-cross-entropy.png)
 
 The arrangement of points on the right is much more likely to happen, and has a low cross-entropy.
 
-[Top right point should be 0.7]
+[LHS has more realistic probability values. RHS top-right point should be 0.7]
 
 Points with higher $-log(P)$ scores are those which have the worst (least likely) predictions.
 
 We can think of the $-log(P)$ value as the error of each point's classification.
 
-Cross entropy tells us how likely it is that the events recorded occurred based on the probabilities of them happening.
+Cross entropy tells us how likely it is that the events we observed occurred based on the probabilities of them happening.
 
+The goal has changed: from maximising probability to minimising cross entropy.
 
---------------------
+Assume 3 doors have different probabilities of having a gift behind them:
+![l2-gifts-behind-doors](l2-gifts-behind-doors.png)
 
-Udacity email: tomnott@gmail.com
-Course: https://classroom.udacity.com/nanodegrees/nd188
+The probability of the outcome as recorded by red circles is $0.8 \times 0.7 \times 0.9 = 0.504$
 
-https://classroom.udacity.com/nanodegrees/nd188/parts/ef29955b-1133-473a-a46f-c0696c865f97/modules/f9c54fe1-528c-48ea-a29b-2917af192032/lessons/8a041692-b23c-4443-b3a5-ba5d2f840db7/concepts/4d015fb7-e73c-447f-a17a-34a0a2b694a0#
+![l2-doors-and-probabilities](l2-doors-and-probabilities.png)
+Above the 8 rows are the $2^3$ possible outcomes. The probabilities column sums to $1$.
 
-The answer to:
-Quiz: Build an XOR Multi-Layer Perceptron
+Note the cross entropy is highest when the probability is lowest.
 
-has a different network structure to the question.
+Cross-entropy is inversely proportional to the total probability of an outcome.
 
+![l2-cross-entropy-formula](l2-cross-entropy-formula.png)
 
+As $y_i$ is either $0$ or $1$, [either the first or second term of the sum is cancelled out](https://stats.stackexchange.com/a/287933/162527).
+
+Note the bottom right notation.
+
+```
+def cross_entropy(Y, P):
+    Y = np.float_(Y)
+    P = np.float_(P)
+    return -np.sum(Y * np.log(P) + (1 - Y) * np.log(1 - P))
+```
+
+### Multi-class cross entropy
+
+So far, we've looked only at binary outcomes (gift or not).  Here for 3 possible outcomes:
+
+![l2-multi-class-cross-entropy-example](l2-multi-class-cross-entropy-example.png)
+
+![ls-multi-class-cross-entropy-formula](ls-multi-class-cross-entropy-formula.png)
+
+In the bottom right formula, $m$ is the number of classes, $n$ the number of observations.
+
+### Logistic regression cost function
+
+![l2-error-function-example](l2-error-function-example.png)
+
+By convention, we multiply by $1 \over m$ to get the average value. (Also done if using the multi-class formula.)
+
+Substituting $y = \sigma(Wx + b)$ we get:
+
+![l2-error-function-2-classes](l2-error-function-2-classes.png)
+
+A loss function computes the error for a single training example; the cost function is the average of the loss functions of the entire training set, and may be regularised (see later).
+
+### Gradient descent
+
+![l2-gradient-descent-example](l2-gradient-descent-example.png)
+
+The negative derivative tells us the direction of steepest slope to follow down to a lower cost.
+
+![l2-gradient-descent-algorithm](l2-gradient-descent-algorithm.png)
+
+The derivative of the cost / error function at a point $x$ with label $y$ an prediction $\hat y$ is:
+
+$ \displaystyle \frac{\delta E}{\delta w_j}=−(y− \hat y )x_j $
+
+$ \displaystyle \frac{\delta E}{\delta b}=−(y− \hat y ) $
+
+$ ∇E=−(y− \hat y )(x_1 ,\ …\ ,x_n,1)$
+
+The $1$ gives the derivative of the bias term.
+
+* The gradient is a scalar times the coordinates of the point.
+* The scalar is the difference between the label and prediction.
+* The closer to the prediction, the smaller the gradient.
+
+The updates of gradient descent are:
+
+$w_i ′ ← w_i + α(y− \hat y )x_i$
+
+$b′ ← b + α(y− \hat y )$
+
+Note: Since we've taken the average of the errors, the term we are adding should be $\frac{1}{m} \cdot \alpha$ instead of $\alpha$, but as $\alpha$ is a constant, then in order to simplify calculations, we'll just take $\frac{1}{m} \cdot \alpha$ to be our learning rate, and abuse the notation by just calling it $\alpha$.
+
+### Gradient Descent vs Perceptron Algorithm
+
+In a perceptron the labels and predictions are either 1 or 0, then the difference is either 0, 1 or -1. In the 0 case, there is no update.
+
+Hence these two are equivalent:
+
+![l2-perceptron-vs-grad-desc](l2-perceptron-vs-grad-desc.png)
+
+Except on the left, any value in the range $[0,1]$ is possible.
+
+![l2-gradient-descent-intuition](l2-gradient-descent-intuition.png)
+
+The "go further away" is because a correct point's classification wants to be closer to 1 if it is already correct.
+
+```
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def output_formula(features, weights, bias):
+    return sigmoid(np.dot(features, weights) + bias)
+
+def error_formula(y, output):
+    return - y*np.log(output) - (1 - y) * np.log(1-output)
+
+def update_weights(x, y, weights, bias, learnrate):
+    output = output_formula(x, weights, bias)
+    d_error = y - output
+    weights += learnrate * d_error * x
+    bias += learnrate * d_error
+    return weights, bias
+```
+### Non-linear models
+
+Neural networks allow for a complex, non-linear boundary.
+
+To combine two perceptrons regions, add their probability outputs. This will give numbers in a range greater than 1, so use the sigmoid function to reduce the values to the range $[0,1]$.
+
+![l2-combine-two-regions](l2-combine-two-regions.png)
+
+Weights and biases can also be added:
+
+![l2-combine-perceptrons.png](l2-combine-perceptrons.png)
+
+Thus a neural network uses perceptrons as inputs to perceptrons.
+
+![l2-combining-3-regions](l2-combining-3-regions.png)
+
+![l2-3-input-variables](l2-3-input-variables.png)
+
+With many input variables, there is a high-dimensional space, which is split with a highly non-linear boundary if there are many hidden layers in the network.
+
+Notation: $W^{(l)}_ij$ is the $l$-th layer matrix of weights from the $i$th input of the previous node to the $j$th neuron.
+
+![l2-backprop-boundary-movement](l2-backprop-boundary-movement.png)
+
+In the above, we want to reduce the weighting given to the top linear model, as it it causing the output to be incorrect.
+
+Also we want the linear model boundaries to move in the directions shown.
+
+![l2-grad-of-error-function](l2-grad-of-error-function.png)
+
+![l2-chain-rule](l2-chain-rule.png)
+
+The derivative of the sigmoid function is:
+
+$\sigma' = \sigma(x)(1-\sigma(x))$
+
+### Overfitting and underfitting
+
+Underfitting is using a too-simple solution - it will make too many errors. A.k.a. *error due to bias*.
+
+Overfitting is an over-complex too-specific solution which fits the training data extremely well but will not generalise to the test data. A.k.a. *high variance*.
+
+![l2-over-under-fitting](l2-over-under-fitting.png)
+
+![l2-over-under-fitting2](l2-over-under-fitting2.png)
+
+Because it it near to impossible to get the complexity of architecture just right, we err on the side of an overly complex model and then reduce overfitting.
+
+### Early stopping
+
+![l2-train-vs-test-error](l2-train-vs-test-error.png)
+
+Do gradient descent only until the test error starts to rise.
+
+### Regularisation
+
+![l2-sigmoid-with-high-coefficients](l2-sigmoid-with-high-coefficients.png)
+
+When classifying only to points, the model on the right with larger coefficients gives a better result as the output values are closer to 0 and 1.
+
+However, the gradients will generally be very close to $0$, except in a very small region.
+
+The LHS model will be more effective for gradient descent.
+
+The RHS model will generate large errors because it is overly confident.
+
+![l2-err-func-regularised](l2-err-func-regularised.png)
+
+The top formula (absolute values) is called L1 Regularisation.
+
+The one with the squared weights is called L2 Regularisation.
+
+L1 is sparse - has small weights tend to go to zero. If we have too many features, L1 can will set some weights to 0 so that some are unused.
+
+L2 generally gives better results for training models.  It prefers small homogeneous weights.
+
+Given the choice between weights $(0,1)$ and $(0.5, 0.5)$, L2 will prefer the latter since $0^2 + 1^2 = 1$ while $0.5^2 + 0.5^2 = 0.5$ is smaller.
+
+### Dropout
+
+Dropout ensures that there is less specialistion in the neurons. Large weights will dominate the network, meaning the other parts don't really get trained.
+
+Dropout randomly turns off parts of the network ensuring a more even contribution of neurons to the final output.
+
+A hyperparameter is the probability that each node will get dropped.
+
+### Local Minima and Random Restart
+
+Gradient descent can have us stop in a local minima. 
+
+Random Restart starts gradient descent again from another random location, increasing the likelihood that a better minima is found.
+
+### Vanishing Gradient
+
+The sigmoid function's gradient becomes very shallow at small distances from $0$.
+
+The derivatives tell us in which direction to move, and determine the movement amount, so we don't want them to be too small.
+
+Because the chain rule is used to calculate the derivative of a first layer weight, this product of derivatives can get smaller and smaller as a network gets deeper, making our descent steps too small.
+
+Tanh is a scaled sigmoid, giving outputs between [-1, 1], instead of [0, 1] and with a steeper slope, between [0, 1] instead of [0, 0.25].
+
+[Why is tanh almost always better than sigmoid as an activation function?](https://stats.stackexchange.com/q/330559/162527)
+
+ReLU returns $max(x, 0)$.  It can improve training signivicantly without sacrificing much accuracy. The gradient is either 1 or 0.
+
+ReLU or Tanh will give larger derivatives, making the chain rule calculated derivatives less small, giving a faster gradient descent.
+
+If ReLU is used, the final layer will still need to be sigmoid or softmax to get probabilities between 0 and 1.
+
+Keeping the final layer as a ReLU helps build regression models which predict their value (used in RNNs).
+
+### Batch vs Stochastic Gradient Descent
+
+Instead of using all the input data before taking a gradient descent step, we can use a single point or mini-batches of input to speed the iteration process with slightly less accurate steps.
+
+### Learning rate decay
+
+What learning rate to use is a non-trivial research question.
+
+A high learning rate can actually bounce out of a local minima. A too low rate will take too long to converge.
+
+If the model isn't working (error is not decreasing), decrease the learning rate.
+
+An optimisation is to decrease learning rates are the model gets closer to a solution.
+
+### Momentum
+
+Momentum uses inertia to bounce out of a local minima based on the speed that we've built up already going downhill.
+
+![l2-momentum](l2-momentum.png)
+
+With a $\beta$ or momentum hyperparameter between 0 and 1, we can have the last step have a lot of influence on the momentum, and a previous step have less by raising $\beta$ to a power based on the age of the step.
