@@ -7,3 +7,4 @@ The formulae are converted to images by [TeXify](https://github.com/apps/texify)
 ### Lesson notes
 
 * [Lesson 2](notes/lesson-2.md)
+* [Lesson 3](notes/lesson-3.md)
