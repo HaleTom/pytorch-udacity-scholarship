@@ -25,9 +25,9 @@ Word then spread organically. Research labs then started switching.
 
 ### Debugging and Designing PyTorch
 
-First public release 1.12.
+First public release 0.1.12.
 
-In about v1.6, Justin Johnson (co-runs CS231 ConvNets course at Stanford) was interning at FAIR.  His networks weren't training because of a non-contiguous tensor passed through a linear layer.
+In about v0.1.6, Justin Johnson (co-runs CS231 ConvNets course at Stanford) was interning at FAIR.  His networks weren't training because of a non-contiguous tensor passed through a linear layer.
 
 Python is extremely readable and writable, but the trade-off is speed.
 
@@ -51,7 +51,7 @@ If the focus is on production, then the library may not be as usable.
 
 PyTorch 0.4 scaled to thousands of GPUs of parallel training.
 
-1.0 allows exporting the model to a C++ runtime, or quantising (running at 8-bit rather than 32-bit).
+v0.1.0 allows exporting the model to a C++ runtime, or quantising (running at 8-bit rather than 32-bit).
 
 For production, function annotations are added to the model. PyTorch will create the model in its own iternal format which can then be shipped to production.
 
@@ -67,9 +67,9 @@ This is powered by a PyTorch's JIT compiler.  Its first aim was to allow easy pr
 
 The long-term JIT compiler objective is to allow the parts of the model which are compiled to be non-trivially optimised by fusing operations, eg, making memory bandwith bound operations into compute-bound operations.  As new hardware comes available, it can be optimised for larger graphs.
 
-Before 1.0, the ONNX open standard was released. A standard for all deep learning frameworks to talk to each other. Partnered with Microsoft and other big players like Chainer, Caffe2, Tensorflow so that a model trained in one can be exported to another.
+Before 0.1.0, the ONNX open standard was released. A standard for all deep learning frameworks to talk to each other. Partnered with Microsoft and other big players like Chainer, Caffe2, Tensorflow so that a model trained in one can be exported to another.
 
-Before 1.0, export would be via ONNX to run in somthing like TensorFlow.
+Before 0.1.0, export would be via ONNX to run in somthing like TensorFlow.
 But not all complex models could be exported as the standard wasn't developed enough.
 
 ### Cutting-edge applications in PyTorch
