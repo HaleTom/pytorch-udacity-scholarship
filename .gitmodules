@@ -1,0 +1,6 @@
+[submodule "code/deep-learning-v2-pytorch"]
+	path = code/deep-learning-v2-pytorch
+	url = https://github.com/HaleTom/pytorch-udacity-intro.git
+[submodule "code/pytorch_challenge"]
+	path = code/pytorch_challenge
+	url = git@bitbucket.org:HaleTom/pytorch-challenge.git
