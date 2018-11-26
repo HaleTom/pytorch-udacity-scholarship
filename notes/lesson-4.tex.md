@@ -317,3 +317,86 @@ for e in range(epochs):
           "Validation loss: {:.3f}, ".format(test_loss),
           "Validation accuracy: {:.3f}".format(tot_correct / len(testloader.dataset)))
 ```
+
+## Part 6 - Saving and Loading Models
+
+Setup `DataLoader`s:
+
+```
+# Define a transform to normalize the data
+transform = transforms.Compose([transforms.ToTensor(),
+                                transforms.Normalize((0.5,), (0.5,))])
+# Download and load the training data
+trainset = datasets.FashionMNIST('~/.pytorch/F_MNIST_data/', download=True, train=True, transform=transform)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=64, shuffle=True)
+
+# Download and load the test data
+testset = datasets.FashionMNIST('~/.pytorch/F_MNIST_data/', download=True, train=False, transform=transform)
+testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=True)
+```
+
+Shortcut for defining and training a network given [`fc_model.py`](fc_model.py):
+
+```
+model = fc_model.Network(784, 10, [512, 256, 128])
+criterion = nn.NLLLoss()
+optimizer = optim.Adam(model.parameters(), lr=0.001)
+```
+
+Train a network:
+```
+fc_model.train(model, trainloader, testloader, criterion, optimizer, epochs=2)
+```
+Note the [output calculations are subtly wrong](https://github.com/udacity/deep-learning-v2-pytorch/issues/71).
+
+`str(model)` gives something like:
+```
+ Network(
+  (hidden_layers): ModuleList(
+    (0): Linear(in_features=784, out_features=512, bias=True)
+    (1): Linear(in_features=512, out_features=256, bias=True)
+    (2): Linear(in_features=256, out_features=128, bias=True)
+  )
+  (output): Linear(in_features=128, out_features=10, bias=True)
+  (dropout): Dropout(p=0.5)
+)
+```
+
+`model.state_dict().keys()`:
+```
+odict_keys(['hidden_layers.0.weight', 'hidden_layers.0.bias', 'hidden_layers.1.weight', 'hidden_layers.1.bias', 'hidden_layers.2.weight', 'hidden_layers.2.bias', 'output.weight', 'output.bias'])
+```
+
+### Saving
+
+The `state_dict` must match the parameters of the model it is being loaded into.
+
+Save every parameter used for building the network in the checkpoint (with the `state_dict`) so that it contains all information to recreate the network.
+
+```
+checkpoint = {'input_size': 784,
+              'output_size': 10,
+              'hidden_layers': [each.out_features for each in model.hidden_layers],
+              'state_dict': model.state_dict()}
+
+torch.save(checkpoint, 'checkpoint.pth')
+```
+
+### Loading
+
+```
+def load_checkpoint(filepath):
+    checkpoint = torch.load(filepath)
+    model = fc_model.Network(checkpoint['input_size'],
+                             checkpoint['output_size'],
+                             checkpoint['hidden_layers'])
+    model.load_state_dict(checkpoint['state_dict'])
+
+    return model
+```
+```
+model = load_checkpoint('checkpoint.pth')
+```
+
+
+```
