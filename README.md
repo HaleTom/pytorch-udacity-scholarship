@@ -4,6 +4,8 @@ These notes were written in Markdown with <img src="/tex/7f7cce93036d60ae895df4c
 
 The formulae are converted to images by [TeXify](https://github.com/apps/texify).
 
+I believe that I have attributed all materials, except the Udacity PyTorch Scholarship course, which these notes are blatantly copied from ;)
+
 ### Lesson notes
 
 * [Lesson 2](notes/lesson-2.md)
