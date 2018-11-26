@@ -12,4 +12,4 @@ The formulae are converted to images by [TeXify](https://github.com/apps/texify)
 
 ### Other resources
 
-* [Tatiana's excellent Lesson 2 notes](Lesson2-Tatiana-notes.pdf)
+* [Tatiana Gaponova's notes](https://github.com/baroquerock/udacity_notes) including NNs and CNNs
