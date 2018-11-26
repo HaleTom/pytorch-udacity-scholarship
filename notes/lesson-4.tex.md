@@ -189,5 +189,131 @@ for e in range(epochs):
 
 ## Part 5 - Inference and Validation
 
-Todo
+Making predictions with a NN is called *inference*.
 
+NNs tend to perform too well on their training data (overfitting), and don't generalise to data not seen before.
+
+To test the actual performance, previously unseen data in the *validation set* is used.
+
+We avoid overfitting through regularization such as dropout while monitoring the validation performance during training.
+
+Set `Train=false` to get the test / validation set data:
+```
+testset = datasets.FashionMNIST('~/.pytorch/F_MNIST_data/', download=True, train=False, transform=transform)
+```
+
+To get a single minibatch from a `DataLoader`:
+```
+images, labels = next(iter(testloader))
+```
+
+### Get predictions
+
+`top_values, top_indices = ps.topk(k, dim=d)` gives returns the $k$ highest values across dimension $d$.
+
+Since we just want the most likely class, we can use `ps.topk(1)`. If the highest value is the fifth element, we'll get back 4 as the index.
+
+Check if the predictions match the labels:
+
+```
+equals = top_class == labels.view(*top_class.shape)
+# equals is a byte tensor of 0 or 1
+accuracy = torch.mean(equals.type(torch.FloatTensor))
+print(f'Accuracy: {accuracy.item()*100}%')
+```
+
+### Dropout
+
+In `__init__()`, add:
+    # Dropout module with 0.2 drop probability
+    self.dropout = nn.Dropout(p=0.2)
+
+Then, in `forward()`:
+
+    x = self.dropout(F.relu(self.fc1(x)))
+
+Don't use dropout on the output layer.
+
+Turn off dropout during validation, testing, and whenever we're using the network to make predictions. 
+
+* `model.eval()` sets the model to evaluation mode where the dropout probability is 0
+* `model.train()` turns dropout back on
+
+The presented solution as an inaccuracy in the calculations: it [assumes that the total number of examples is divisible by the minibatch size](https://github.com/udacity/deep-learning-v2-pytorch/issues/71).
+
+Here is my solution which divides by the correct amount (the exact number of training examples):
+
+   ```
+from torch import nn, optim
+import torch.nn.functional as F
+
+class ClassifierDropout(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.fc1 = nn.Linear(784, 256)
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 64)
+        self.fc4 = nn.Linear(64,  10)
+
+        self.dropout = nn.Dropout(p=0.2)
+
+    def forward(self, x):
+        x = x.view(-1, self.fc1.in_features)
+
+        x = self.dropout(F.relu(self.fc1(x)))
+        x = self.dropout(F.relu(self.fc2(x)))
+        x = self.dropout(F.relu(self.fc3(x)))
+        x = F.log_softmax(self.fc4(x), dim=1)
+
+        return x
+   ```
+
+```
+## TODO: Train your model with dropout, and monitor the training progress with the validation loss and accuracy
+reseed()
+model = ClassifierDropout()
+criterion = nn.NLLLoss(reduction='sum')
+optimizer = optim.Adam(model.parameters())
+
+epochs = 5
+train_losses, test_losses = [], []
+
+for e in range(epochs):
+    train_tot_loss = 0
+    model.train()  # Return to training mode
+    for images, labels in trainloader:
+        optimizer.zero_grad()
+
+        log_ps = model(images)
+        loss = criterion(log_ps, labels)
+        train_tot_loss += loss.item()
+        loss.backward()
+
+        optimizer.step()
+
+    # Evaluate on test set, don't do dropout
+    model.eval()
+
+    tot_correct = 0
+    test_tot_loss = 0
+    with torch.no_grad():
+        for images, labels in testloader:
+            log_ps = model(images)  # We don't need to torch.exp to get the largest
+            test_tot_loss += criterion(log_ps, labels).item()
+
+            top_value, top_index = log_ps.topk(1, dim=1)
+            equals = labels == top_index.view(*labels.shape)
+            tot_correct += sum(equals).item()
+
+    train_loss = train_tot_loss / len(trainloader.dataset)
+    test_loss = test_tot_loss / len(testloader.dataset)
+
+    train_losses.append(train_loss)
+    test_losses.append(test_loss)
+
+    print("Epoch {}/{}, ".format(e+1, epochs),
+          "Train loss: {:.3f}, ".format(train_loss),
+          "Validation loss: {:.3f}, ".format(test_loss),
+          "Validation accuracy: {:.3f}".format(tot_correct / len(testloader.dataset)))
+```
