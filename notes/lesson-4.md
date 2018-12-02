@@ -1,5 +1,42 @@
 # Lesson 4 - Introduction to PyTorch
 
+## Using Google Colab
+
+To train about 250x faster than on your CPU, use [Google Colab](https://colab.research.google.com/).
+
+Put the following before the first code cell in the notebooks:
+
+
+```python
+#
+# Install required modules
+#
+  !pip install -U pillow  # Get latest pillow if not already installed
+
+  # http://pytorch.org/
+  from os.path import exists
+  from wheel.pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag
+  platform = '{}{}-{}'.format(get_abbr_impl(), get_impl_ver(), get_abi_tag())
+  cuda_output = !ldconfig -p|grep cudart.so|sed -e 's/.*\.\([0-9]*\)\.\([0-9]*\)<img src="/notes/tex/31f175681c054c79319de000d6d0fca5.svg?invert_in_darkmode&sanitize=true" align=middle width=36.75245804999999pt height=24.7161288pt/> due vi syntax
+  accelerator = cuda_output[0] if exists('/dev/nvidia0') else 'cpu'
+
+  !pip install -U http://download.pytorch.org/whl/{accelerator}/torch-0.4.1-{platform}-linux_x86_64.whl torchvision
+  import torch
+```
+
+```python
+#
+# Check if CUDA is available
+#
+train_on_gpu = torch.cuda.is_available()
+
+if not train_on_gpu:
+    print('CUDA is not available.  Training on CPU ...')
+else:
+    print('CUDA is available!  Training on GPU ...')
+```
+
+## General and Part 1
 It is mandatory to inherit from `nn.Module` when you're creating a class for your network.
 
 PyTorch networks created with `nn.Module` must have a `forward` method defined. It takes in a tensor `x` and passes it through the operations you defined in the `__init__` method.
@@ -37,7 +74,6 @@ This course has the weight matrices arranged transposed compared to Andrew Ng:
 
 Instead of <img src="/notes/tex/8f5653c8b9cca851b9adae8f54135c40.svg?invert_in_darkmode&sanitize=true" align=middle width=85.73797814999999pt height=22.831056599999986pt/> it is: <img src="/notes/tex/6a4eab0aeb6f15cde85dba4ab7e153ec.svg?invert_in_darkmode&sanitize=true" align=middle width=85.73797815pt height=22.831056599999986pt/>
 
-
 ### Part 2 - Neural Networks in Pytorch
 
 Display an image:
@@ -67,7 +103,7 @@ model.fc1.weight.data.normal_(std=0.01)
 
 **Note:** I'm glossing over a few details here that require some knowledge of vector calculus, but they aren't necessary to understand what's going on.
 
-We update our weights using this gradient with some learning rate <img src="/notes/tex/c745b9b57c145ec5577b82542b2df546.svg?invert_in_darkmode&sanitize=true" align=middle width=10.57650494999999pt height=14.15524440000002pt/>. 
+We update our weights using this gradient with some learning rate <img src="/notes/tex/c745b9b57c145ec5577b82542b2df546.svg?invert_in_darkmode&sanitize=true" align=middle width=10.57650494999999pt height=14.15524440000002pt/>.
 
 <p align="center"><img src="/notes/tex/2874884b5bad5695b3f8896adf9e77fc.svg?invert_in_darkmode&sanitize=true" align=middle width=132.89707694999998pt height=36.2778141pt/></p>
 
@@ -230,7 +266,7 @@ Then, in `forward()`:
 
 Don't use dropout on the output layer.
 
-Turn off dropout during validation, testing, and whenever we're using the network to make predictions. 
+Turn off dropout during validation, testing, and whenever we're using the network to make predictions.
 
 * `model.eval()` sets the model to evaluation mode where the dropout probability is 0
 * `model.train()` turns dropout back on
@@ -277,7 +313,8 @@ train_losses, test_losses = [], []
 
 for e in range(epochs):
     train_tot_loss = 0
-    model.train()  # Return to training mode
+    model.train()  # Ensure training mode
+
     for images, labels in trainloader:
         optimizer.zero_grad()
 
@@ -394,5 +431,199 @@ def load_checkpoint(filepath):
 model = load_checkpoint('checkpoint.pth')
 ```
 
+## Part 7 - Loading Image Data
+
+Add the following to download the dataset:
+```
+%%bash
+# Only download and unzip data if it hasn't been done already
+if [[ ! -d Cat_Dog_data ]]; then
+  wget -qc https://s3.amazonaws.com/content.udacity-data.com/nd089/Cat_Dog_data.zip
+  unzip Cat_Dog_data.zip | tail -n3;
+fi
+```
+
+Setup
+```
+%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+
+import torch
+from torchvision import datasets, transforms
+import matplotlib.pyplot as plt
+```
+
+### Transpose
+
+For training, all images need to be the same size. Resize them with `transforms.Resize()` or crop with `transforms.CenterCrop()`, `transforms.RandomResizedCrop()`, etc.
+
+At the end, make a `Tensor` with `transforms.ToTensor()`. Transforms can be pipelined with `transforms.Compose()`, eg:
+
+```python
+transform = transforms.Compose([transforms.Resize(255),
+                                 transforms.CenterCrop(224),
+                                 transforms.ToTensor()])
 
 ```
+
+Define a pipeline of [`torchvision.transforms`](http://pytorch.org/docs/master/torchvision/transforms.html) like so:
+
+```python
+transform = transforms.Compose([transforms.Resize(255),      # Make smallest edge 255px
+                                transforms.CenterCrop(224),  # Square image, 224 x 224px
+                                transforms.ToTensor()])      # PyTorch-ify
+```
+
+The input to the pipeline is expected to be a PIL / Pillow image object.
+
+Data augmentation helps the network generalise to different rotations, crops and scalings. It's a way of simulating a larger dataset to gain better accuracy.
+
+To randomly rotate, scale and crop, then flip your images you would define your transforms like this:
+
+```python
+train_transforms = transforms.Compose([transforms.RandomRotation(30),
+                                       transforms.RandomResizedCrop(224),
+                                       transforms.RandomHorizontalFlip(),
+                                       transforms.ToTensor(),
+                                       transforms.Normalize([0.5, 0.5, 0.5], 
+                                                            [0.5, 0.5, 0.5])])
+```
+
+Normalising to 0.5 is done so as to not confuse tutorial readers with "magic numbers". [Soumith says these should really be the RGB means and <img src="/notes/tex/8cda31ed38c6d59d14ebefa440099572.svg?invert_in_darkmode&sanitize=true" align=middle width=9.98290094999999pt height=14.15524440000002pt/>s calculated over the dataset](https://discuss.pytorch.org/t/normalization-in-the-mnist-example/457/7). The code to do that is [here](https://discuss.pytorch.org/t/normalization-in-the-mnist-example/457/12), which generates the ImageNET magic numbers `[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]` (below).
+
+Normalise with [`transforms.Normalize`](https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.Normalize). Pass a list of means and list of standard deviations, then the color channels are normalized like so:
+
+```input[channel] = (input[channel] - mean[channel]) / std[channel]```
+
+Subtracting `mean` centers the data around zero and dividing by `std` squishes the values to be between -1 and 1. Normalizing helps keep the network work weights near zero which in turn makes backpropagation more stable. Without normalization, networks will tend to fail to learn.
+
+When you're testing however, you'll want to use images that aren't altered (except you'll need to normalize the same way).
+
+[For validation/test images, you'll typically just resize and crop.](https://stats.stackexchange.com/a/320967/162527)
+
+### Load data from files into a `Dataset`
+
+Load with [`datasets.ImageFolder`](http://pytorch.org/docs/master/torchvision/datasets.html#imagefolder) from `torchvision`.
+
+```python
+dataset = datasets.ImageFolder('path/to/data', transform=transform)
+```
+
+### Get mini-batches - `DataLoader`
+
+The classes are directories, and the image names are irrelevant.
+
+A [`DataLoader`](http://pytorch.org/docs/master/data.html#torch.utils.data.DataLoader) takes a `Dataset` (eg from `ImageFolder`) and returns a generator giving batches of images and labels.
+
+```python
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=32, shuffle=True)
+```
+
+Use the `DataLoader:`
+```python
+# Looping through it, get a batch on each loop 
+for images, labels in dataloader:
+    pass
+
+# Get one batch
+images, labels = next(iter(dataloader))
+```
+
+## Part 8 - Transfer Learning
+
+The first layers of a generic (eg ImageNET) image classifier detect features which can be used to detect different output layers when the final layer(s) of the network are trained to the new, specific task.
+
+The code now looks like this, additionally importing `models`:
+
+```
+%matplotlib inline
+%config InlineBackend.figure_format = 'retina'
+
+import matplotlib.pyplot as plt
+
+import torch
+from torch import nn, optim
+import torch.nn.functional as F
+from torchvision import datasets, transforms, models
+```
+
+```
+data_dir = 'Cat_Dog_data'
+
+# TODO: Define transforms for the training data and testing data
+train_transforms = transforms.Compose([transforms.RandomRotation(30),
+                                       transforms.RandomResizedCrop(224),
+                                       transforms.RandomHorizontalFlip(),
+                                       transforms.ToTensor(),
+                                       transforms.Normalize([0.485, 0.456, 0.406],
+                                                            [0.229, 0.224, 0.225])])
+
+test_transforms = transforms.Compose([transforms.Resize(255),
+                                      transforms.CenterCrop(224),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.485, 0.456, 0.406],
+                                                           [0.229, 0.224, 0.225])])
+
+# Pass transforms in here, then run the next cell to see how the transforms look
+train_data = datasets.ImageFolder(data_dir + '/train', transform=train_transforms)
+test_data = datasets.ImageFolder(data_dir + '/test', transform=test_transforms)
+
+trainloader = torch.utils.data.DataLoader(train_data, batch_size=64, shuffle=True)
+testloader = torch.utils.data.DataLoader(test_data, batch_size=64)
+```
+
+```
+model = models.densenet121(pretrained=True)
+```
+
+[List of pre-trained `torchvision.models` and their error rates](https://pytorch.org/docs/stable/torchvision/models.html)
+
+Print the model as a string to get the name of the last layer.
+
+DenseNET121 is made of the multi-layer CNN-based `features` and also a single-layer:
+```
+(classifier): Linear(in_features=1024, out_features=1000, bias=True)
+```
+
+The features part is a stack of convolutional layers and overall works as a feature detector that can be fed into a classifier.
+
+The classifier part is a single fully-connected layer. This layer was trained on the ImageNet dataset, so it won't work for our specific problem. The 1000 outputs are for the 1000 classes of ImageNET.
+
+Pre-trained networks are amazingly good feature detectors that can be used as the input for simple feed-forward classifiers.  We need to replace the classifier, but keep the feature detectors.
+
+```python
+# Freeze parameters so we don't backprop through them
+for param in model.parameters():
+    param.requires_grad = False
+
+model = models.densenet121(pretrained=True)
+
+classifier = nn.Sequential(OrderedDict([
+                          ('fc1', nn.Linear(1024, 500)),
+                          ('relu', nn.ReLU()),
+                          ('fc2', nn.Linear(500, 2)),
+                          ('output', nn.LogSoftmax(dim=1))
+                          ]))
+
+model.classifier = classifier  # Replace DenseNET121's classifier with our own
+
+criterion = nn.NLLLoss()
+
+# Only train the classifier parameters, feature parameters are frozen
+optimizer = optim.Adam(model.classifier.parameters(), lr=0.003)
+
+# Automatically use CUDA if it's enabled:
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+model.to(device);
+```
+
+The training and performance code is like in Part 7, except the inputs need to be moved to the GPUs for processing:
+
+```
+# Move input and label tensors to the default device
+inputs, labels = inputs.to(device), labels.to(device)
+
+```
+
+Use GPUs whenever possible as the speed up is about 250x.
