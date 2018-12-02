@@ -60,7 +60,7 @@ All operators have an `out` parameter where the result is stored: `torch.add(x, 
 
 Set a random seed:
 
-```
+```python
 torch.manual_seed(1)
 if torch.cuda.is_available:
     torch.cuda.manual_seed_all(1)
@@ -77,7 +77,7 @@ Instead of $h=Wx + b$ it is: $\ h=xW +b$
 ### Part 2 - Neural Networks in Pytorch
 
 Display an image:
-```
+```python
 import matplotlib.pyplot as plt
 plt.imshow(images[1].numpy().squeeze(), cmap='Greys_r');
 ```
@@ -86,7 +86,7 @@ The first argument is expected to be matrix.
 Weights: `model.fc1.weight`
 Bias: `print(model.fc1.bias)`
 
-```
+```python
 # Set biases to all zeros
 model.fc1.bias.data.fill_(0)
 
@@ -121,7 +121,7 @@ The input to criterion functions is expected to be class scores, not probabiliti
 
 [`nn.CrossEntropyLoss`](https://pytorch.org/docs/stable/nn.html#torch.nn.CrossEntropyLoss) criterion combines `nn.LogSoftmax()` and `nn.NLLLoss()` in one single class.
 
-```
+```python
 criterion = nn.CrossEntropyLoss()
 ...
 # Calculate the loss with the pre-probability logits and the labels
@@ -150,7 +150,7 @@ Also, you can turn on or off gradients altogether with `torch.set_grad_enabled(T
 `.grad` shows a tensor's gradient as calculated by `loss.backward()`
 
 `.grad_fn` shows the function used to calculate `.grad`, eg:
-```
+```python
 y = x**2
 print(y.grad_fn)
 ```
@@ -158,13 +158,13 @@ print(y.grad_fn)
 
 ## Part 4 - Fashion-MNIST
 
-```
+```python
 from torch import nn, optim
 import torch.nn.functional as F
 ```
 
 The network can be defined as a subclass of `nn.Module`:
-```
+```python
 class Classifier(nn.Module):
     def __init__(self):
         super().__init__()
@@ -189,7 +189,7 @@ Note that `forward()` automatically resizes the images via `view()`.
 
 Alternatively, simple models can be defined via `Sequential`:
 
-```
+```python
 model = nn.Sequential(nn.Linear(784, 384),
                       nn.ReLU(),
                       nn.Linear(384, 128),
@@ -199,14 +199,14 @@ model = nn.Sequential(nn.Linear(784, 384),
 ```
 
 ### Create the network, define the criterion and optimizer
-```
+```python
 model = Classifier()
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(model.parameters())
 ```
 
 ### Train a network
-```
+```python
 epochs = 5
 
 for e in range(epochs):
@@ -234,12 +234,12 @@ To test the actual performance, previously unseen data in the *validation set* i
 We avoid overfitting through regularization such as dropout while monitoring the validation performance during training.
 
 Set `Train=false` to get the test / validation set data:
-```
+```python
 testset = datasets.FashionMNIST('~/.pytorch/F_MNIST_data/', download=True, train=False, transform=transform)
 ```
 
 To get a single minibatch from a `DataLoader`:
-```
+```python
 images, labels = next(iter(testloader))
 ```
 
@@ -251,7 +251,7 @@ Since we just want the most likely class, we can use `ps.topk(1)`. If the highes
 
 Check if the predictions match the labels:
 
-```
+```python
 equals = top_class == labels.view(*top_class.shape)
 # equals is a byte tensor of 0 or 1
 accuracy = torch.mean(equals.type(torch.FloatTensor))
@@ -279,7 +279,7 @@ The presented solution as an inaccuracy in the calculations: it [assumes that th
 
 Here is my solution which divides by the correct amount (the exact number of training examples):
 
-   ```
+```python
 from torch import nn, optim
 import torch.nn.functional as F
 
@@ -303,9 +303,9 @@ class ClassifierDropout(nn.Module):
         x = F.log_softmax(self.fc4(x), dim=1)
 
         return x
-   ```
-
 ```
+
+```python
 ## TODO: Train your model with dropout, and monitor the training progress with the validation loss and accuracy
 reseed()
 model = ClassifierDropout()
@@ -359,7 +359,7 @@ for e in range(epochs):
 
 Setup `DataLoader`s:
 
-```
+```python
 # Define a transform to normalize the data
 transform = transforms.Compose([transforms.ToTensor(),
                                 transforms.Normalize((0.5,), (0.5,))])
@@ -374,20 +374,20 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=64, shuffle=True)
 
 Shortcut for defining and training a network given [`fc_model.py`](fc_model.py):
 
-```
+```python
 model = fc_model.Network(784, 10, [512, 256, 128])
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(model.parameters(), lr=0.001)
 ```
 
 Train a network:
-```
+```python
 fc_model.train(model, trainloader, testloader, criterion, optimizer, epochs=2)
 ```
 Note the [output calculations are subtly wrong](https://github.com/udacity/deep-learning-v2-pytorch/issues/71).
 
 `str(model)` gives something like:
-```
+```python
  Network(
   (hidden_layers): ModuleList(
     (0): Linear(in_features=784, out_features=512, bias=True)
@@ -400,7 +400,7 @@ Note the [output calculations are subtly wrong](https://github.com/udacity/deep-
 ```
 
 `model.state_dict().keys()`:
-```
+```python
 odict_keys(['hidden_layers.0.weight', 'hidden_layers.0.bias', 'hidden_layers.1.weight', 'hidden_layers.1.bias', 'hidden_layers.2.weight', 'hidden_layers.2.bias', 'output.weight', 'output.bias'])
 ```
 
@@ -410,7 +410,7 @@ The `state_dict` must match the parameters of the model it is being loaded into.
 
 Save every parameter used for building the network in the checkpoint (with the `state_dict`) so that it contains all information to recreate the network.
 
-```
+```python
 checkpoint = {'input_size': 784,
               'output_size': 10,
               'hidden_layers': [each.out_features for each in model.hidden_layers],
@@ -421,7 +421,7 @@ torch.save(checkpoint, 'checkpoint.pth')
 
 ### Loading
 
-```
+```python
 def load_checkpoint(filepath):
     checkpoint = torch.load(filepath)
     model = fc_model.Network(checkpoint['input_size'],
@@ -431,14 +431,15 @@ def load_checkpoint(filepath):
 
     return model
 ```
-```
+
+```python
 model = load_checkpoint('checkpoint.pth')
 ```
 
 ## Part 7 - Loading Image Data
 
 Add the following to download the dataset:
-```
+```bash
 %%bash
 # Only download and unzip data if it hasn't been done already
 if [[ ! -d Cat_Dog_data ]]; then
@@ -448,7 +449,7 @@ fi
 ```
 
 Setup
-```
+```python
 %matplotlib inline
 %config InlineBackend.figure_format = 'retina'
 
