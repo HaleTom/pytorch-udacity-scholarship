@@ -12,8 +12,20 @@ I believe that I have attributed all materials, except the Udacity PyTorch Schol
 * [Lesson 3](notes/lesson-3.md)
 * [Lesson 4](notes/lesson-4.md)
 
+### Google Colab starter code for `Image Classifier Project.ipynb`
+It took me a while to work out how to get Google Colab setup for this project:
+
+ * Install newly released PyTorch 1.0.0
+ * Automatically download and unzip the dataset
+ * Check and warn if GPU is not enabled
+ * Helper functions
+  * `image_show()`: Convert and show an image without the default gridlines
+  * `label_to_text()`: Convert a tensor label to its label from `cat_to_name.json`
+
+Here's the setup code: [`Google_Colab_startup_PyTorch_Challenge.ipynb`](code/Google_Colab_startup_PyTorch_Challenge.ipynb)
+
 ### Buy me a beer^H^H^H^Hcoconut
-I took many hours creating these notes.
+I took many hours creating this content which I hope will make your life easier.
 
 If you have found these notes useful and feel moved to, please donate so I can buy a coconut:
 
