@@ -33,6 +33,8 @@ If you have found these notes useful and feel moved to, please donate so I can b
 
 ### Other resources
 
+[List of all PyTorch Challenge notes](https://docs.google.com/spreadsheets/d/1b7eD6dgWXgFuFpbWHImC5lovWLBfPR_zgaedBRA_21s/edit#gid=0)
+
 * Lesson 2
   * [Tatiana Gaponova's 12-page PDF notes](https://github.com/baroquerock/udacity_notes/blob/master/udacity_nn_basics_tatiana_gaponova.pdf)
   * [73 page Google Doc (author didn't put their name at the top)](https://docs.google.com/document/d/13ESfbTuCja7mEZLfMz-4JxEsaxWyDOoua4gRWC6860c/edit)
