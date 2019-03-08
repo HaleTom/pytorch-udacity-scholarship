@@ -17,7 +17,7 @@ Put the following before the first code cell in the notebooks:
   from os.path import exists
   from wheel.pep425tags import get_abbr_impl, get_impl_ver, get_abi_tag
   platform = '{}{}-{}'.format(get_abbr_impl(), get_impl_ver(), get_abi_tag())
-  cuda_output = !ldconfig -p|grep cudart.so|sed -e 's/.*\.\([0-9]*\)\.\([0-9]*\)<img src="/notes/tex/31f175681c054c79319de000d6d0fca5.svg?invert_in_darkmode&sanitize=true" align=middle width=36.75245804999999pt height=24.7161288pt/> due vi syntax
+  cuda_output = !ldconfig -p|grep cudart.so|sed -e 's/.*\.\([0-9]*\)\.\([0-9]*\)<img src="/notes/pytorch-scholarship/tex/31f175681c054c79319de000d6d0fca5.svg?invert_in_darkmode&sanitize=true" align=middle width=36.75245804999999pt height=24.7161288pt/> due vi syntax
   accelerator = cuda_output[0] if exists('/dev/nvidia0') else 'cpu'
 
   !pip install -U http://download.pytorch.org/whl/{accelerator}/torch-0.4.1-{platform}-linux_x86_64.whl torchvision
@@ -70,9 +70,9 @@ The default datatype of a tensor is `long`.
 
 This course has the weight matrices arranged transposed compared to Andrew Ng:
 
-<img src="/notes/tex/b381b810e5e1d2d2173ca9dd32ce8601.svg?invert_in_darkmode&sanitize=true" align=middle width=160.22186564999998pt height=24.65753399999998pt/>
+<img src="/notes/pytorch-scholarship/tex/b381b810e5e1d2d2173ca9dd32ce8601.svg?invert_in_darkmode&sanitize=true" align=middle width=160.22186564999998pt height=24.65753399999998pt/>
 
-Instead of <img src="/notes/tex/8f5653c8b9cca851b9adae8f54135c40.svg?invert_in_darkmode&sanitize=true" align=middle width=85.73797814999999pt height=22.831056599999986pt/> it is: <img src="/notes/tex/6a4eab0aeb6f15cde85dba4ab7e153ec.svg?invert_in_darkmode&sanitize=true" align=middle width=85.73797815pt height=22.831056599999986pt/>
+Instead of <img src="/notes/pytorch-scholarship/tex/8f5653c8b9cca851b9adae8f54135c40.svg?invert_in_darkmode&sanitize=true" align=middle width=85.73797814999999pt height=22.831056599999986pt/> it is: <img src="/notes/pytorch-scholarship/tex/6a4eab0aeb6f15cde85dba4ab7e153ec.svg?invert_in_darkmode&sanitize=true" align=middle width=85.73797815pt height=22.831056599999986pt/>
 
 ### Part 2 - Neural Networks in Pytorch
 
@@ -99,15 +99,15 @@ model.fc1.weight.data.normal_(std=0.01)
 
 ![l4-fwd-and-back-basses](l4-fwd-and-back-basses.png)
 
-<p align="center"><img src="/notes/tex/31d5beaf8634c2a798828a5114558d86.svg?invert_in_darkmode&sanitize=true" align=middle width=187.3846755pt height=36.2778141pt/></p>
+<p align="center"><img src="/notes/pytorch-scholarship/tex/31d5beaf8634c2a798828a5114558d86.svg?invert_in_darkmode&sanitize=true" align=middle width=187.3846755pt height=36.2778141pt/></p>
 
 **Note:** I'm glossing over a few details here that require some knowledge of vector calculus, but they aren't necessary to understand what's going on.
 
-We update our weights using this gradient with some learning rate <img src="/notes/tex/c745b9b57c145ec5577b82542b2df546.svg?invert_in_darkmode&sanitize=true" align=middle width=10.57650494999999pt height=14.15524440000002pt/>.
+We update our weights using this gradient with some learning rate <img src="/notes/pytorch-scholarship/tex/c745b9b57c145ec5577b82542b2df546.svg?invert_in_darkmode&sanitize=true" align=middle width=10.57650494999999pt height=14.15524440000002pt/>.
 
-<p align="center"><img src="/notes/tex/2874884b5bad5695b3f8896adf9e77fc.svg?invert_in_darkmode&sanitize=true" align=middle width=132.89707694999998pt height=36.2778141pt/></p>
+<p align="center"><img src="/notes/pytorch-scholarship/tex/2874884b5bad5695b3f8896adf9e77fc.svg?invert_in_darkmode&sanitize=true" align=middle width=132.89707694999998pt height=36.2778141pt/></p>
 
-The learning rate <img src="/notes/tex/c745b9b57c145ec5577b82542b2df546.svg?invert_in_darkmode&sanitize=true" align=middle width=10.57650494999999pt height=14.15524440000002pt/> is set such that the weight update steps are small enough that the iterative method settles in a minimum.
+The learning rate <img src="/notes/pytorch-scholarship/tex/c745b9b57c145ec5577b82542b2df546.svg?invert_in_darkmode&sanitize=true" align=middle width=10.57650494999999pt height=14.15524440000002pt/> is set such that the weight update steps are small enough that the iterative method settles in a minimum.
 
 ### Losses in PyTorch
 
@@ -241,7 +241,7 @@ images, labels = next(iter(testloader))
 
 ### Get predictions
 
-`top_values, top_indices = ps.topk(k, dim=d)` gives returns the <img src="/notes/tex/63bb9849783d01d91403bc9a5fea12a2.svg?invert_in_darkmode&sanitize=true" align=middle width=9.075367949999992pt height=22.831056599999986pt/> highest values across dimension <img src="/notes/tex/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode&sanitize=true" align=middle width=8.55596444999999pt height=22.831056599999986pt/>.
+`top_values, top_indices = ps.topk(k, dim=d)` gives returns the <img src="/notes/pytorch-scholarship/tex/63bb9849783d01d91403bc9a5fea12a2.svg?invert_in_darkmode&sanitize=true" align=middle width=9.075367949999992pt height=22.831056599999986pt/> highest values across dimension <img src="/notes/pytorch-scholarship/tex/2103f85b8b1477f430fc407cad462224.svg?invert_in_darkmode&sanitize=true" align=middle width=8.55596444999999pt height=22.831056599999986pt/>.
 
 Since we just want the most likely class, we can use `ps.topk(1)`. If the highest value is the fifth element, we'll get back 4 as the index.
 
@@ -490,7 +490,7 @@ train_transforms = transforms.Compose([transforms.RandomRotation(30),
                                                             [0.5, 0.5, 0.5])])
 ```
 
-Normalising to 0.5 is done so as to not confuse tutorial readers with "magic numbers". [Soumith says these should really be the RGB means and <img src="/notes/tex/8cda31ed38c6d59d14ebefa440099572.svg?invert_in_darkmode&sanitize=true" align=middle width=9.98290094999999pt height=14.15524440000002pt/>s calculated over the dataset](https://discuss.pytorch.org/t/normalization-in-the-mnist-example/457/7). The code to do that is [here](https://discuss.pytorch.org/t/normalization-in-the-mnist-example/457/12), which generates the ImageNET magic numbers `[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]` (below).
+Normalising to 0.5 is done so as to not confuse tutorial readers with "magic numbers". [Soumith says these should really be the RGB means and <img src="/notes/pytorch-scholarship/tex/8cda31ed38c6d59d14ebefa440099572.svg?invert_in_darkmode&sanitize=true" align=middle width=9.98290094999999pt height=14.15524440000002pt/>s calculated over the dataset](https://discuss.pytorch.org/t/normalization-in-the-mnist-example/457/7). The code to do that is [here](https://discuss.pytorch.org/t/normalization-in-the-mnist-example/457/12), which generates the ImageNET magic numbers `[0.485, 0.456, 0.406], [0.229, 0.224, 0.225]` (below).
 
 Normalise with [`transforms.Normalize`](https://pytorch.org/docs/stable/torchvision/transforms.html#torchvision.transforms.Normalize). Pass a list of means and list of standard deviations, then the color channels are normalized like so:
 
