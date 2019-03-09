@@ -342,7 +342,3 @@ predictions = out > 0.5
 accuracy = np.mean(predictions == targets_test)
 print("Prediction accuracy: {:.3f}".format(accuracy))
 ```
-
-## fdsfas
-fdsaf
-
