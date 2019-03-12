@@ -192,6 +192,12 @@ Because we multiply by the derivative of the activation function, using sigmoid 
 
 ### Backprop example code
 
+In this course:
+
+* `x_error` is the derivative of the output of the unit x, *after the activation function is applied*
+* `x_error_term` is the derivative of the weighted sum term, or <img src="/notes/tex/f93ce33e511096ed626b4719d50f17d2.svg?invert_in_darkmode&sanitize=true" align=middle width=8.367621899999993pt height=14.15524440000002pt/> in Ng's courses.
+
+
 Simple example: only one training set recored, forward and backward pass:
 
 ```
@@ -209,10 +215,13 @@ x = np.array([0.5, 0.1, -0.2])
 target = 0.6
 learnrate = 0.5
 
+
+# Shape here is input x neurons
 weights_input_hidden = np.array([[0.5, -0.6],
                                  [0.1, -0.2],
                                  [0.1, 0.7]])
 
+# Explicitly, this should be a column vector as there is only one neuron in output.
 weights_hidden_output = np.array([0.1, -0.3])
 
 ## Forward pass
@@ -229,11 +238,12 @@ error = target - output
 # TODO: Calculate error term for output layer
 output_error_term = error * output * (1 - output)
 
-# TODO: Calculate error term for hidden layer
+# TODO: Calculate error term for hidden layer (sigmoid activation)
 
 # OET shape is ()    # scalar
 # WHO shape is (2,)  # defined above
-hidden_error_term = np.dot(output_error_term, weights_hidden_output) * \
+# dot argument shapes are (hidden, output) and (output, 1)
+hidden_error_term = np.dot(weights_hidden_output, output_error_term) * \
                     hidden_layer_output * (1 - hidden_layer_output)
 
 # HET shape is (2,)
@@ -301,22 +311,24 @@ for e in range(epochs):
         # TODO: Calculate the network's prediction error
         error = y - output
 
-        # TODO: Calculate error term for the output unit
+        # TODO: Calculate error term for the output unit, x * (1-x) == derivative of sigmoid
         output_error_term = error * output * (1 - output)
 
         ## propagate errors to hidden layer
 
         # TODO: Calculate the hidden layer's contribution to the error
-        hidden_error = np.dot(output_error_term, weights_hidden_output)
+        # OET shape is ()    # scalar
+        # WHO shape is (2,)  # defined above
+        # With explicit shapes, .dot() arguments are (hidden, output) and (output, 1)
+        hidden_error = np.dot(weights_hidden_output, output_error_term)
 
-        # TODO: Calculate the error term for the hidden layer
+        # hidden_error.shape == (2,)
+
+        # TODO: Calculate the error term for the hidden layer (the weighted sum or Ng's z term)
         hidden_error_term = hidden_error * hidden_output * (1 - hidden_output)
-
-        # hidden_error_term.shape == (2,)
 
         del_w_hidden_output += output_error_term * hidden_output
         del_w_input_hidden  += np.outer(x, hidden_error_term)
-
 
     # TODO: Update weights  (don't forget to division by n_records or number of samples)
     weights_input_hidden  += learnrate * del_w_input_hidden  / n_records
