@@ -33,3 +33,13 @@ Further learning:
 https://www.youtube.com/watch?v=K165trYeqQo&feature=youtu.be
 
 * [AI, Deep Learning, and Machine Learning: A Primer (Deep learning over the last 50 years)](https://www.youtube.com/watch?v=ht6fLrar91U&feature=youtu.be)
+
+------------
+
+LinkedIn
+
+Here’s what to do:
+:one: Add your profile to *LinkedIn Profiles Table* and connect with other phase 2 pyTorchers: https://bit.ly/2FZtATT
+:two: Join our *LinkedIn Group*: https://www.linkedin.com/groups/13666024/
+:three: Don’t forget to *share your Resume, Elevator Pitch, GitHub profile* in the channel to get a peer review!
+

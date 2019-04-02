@@ -197,76 +197,87 @@ In this course:
 * `x_error` is the derivative of the output of the unit x, *after the activation function is applied*
 * `x_error_term` is the derivative of the weighted sum term, or <img src="/notes/tex/f93ce33e511096ed626b4719d50f17d2.svg?invert_in_darkmode&sanitize=true" align=middle width=8.367621899999993pt height=14.15524440000002pt/> in Ng's courses.
 
+Polished assignment submission of a trainable network:
 
-Simple example: only one training set recored, forward and backward pass:
+Use `np.outer()` to calculate the <img src="/notes/tex/8d9b176fd459e329c57782488a188936.svg?invert_in_darkmode&sanitize=true" align=middle width=31.50693314999999pt height=22.465723500000017pt/> matrix from the inputs and the layer's error term.
+
 
 ```
 import numpy as np
 
+class NeuralNetwork(object):
+    def __init__(self, input_nodes, hidden_nodes, output_nodes, learning_rate):
+        # Set number of nodes in input, hidden and output layers.
+        self.input_nodes = input_nodes
+        self.hidden_nodes = hidden_nodes
+        self.output_nodes = output_nodes
+        self.lr = learning_rate
 
-def sigmoid(x):
-    """
-    Calculate sigmoid
-    """
-    return 1 / (1 + np.exp(-x))
+        # Initialize weights
+        self.weights_input_to_hidden = np.random.normal(0.0, self.input_nodes**-0.5,
+                                       (self.input_nodes, self.hidden_nodes))
+
+        self.weights_hidden_to_output = np.random.normal(0.0, self.hidden_nodes**-0.5,
+                                       (self.hidden_nodes, self.output_nodes))
+
+        self.activation_function = lambda x : 1 / (1 + np.exp(-x))  # Replace 0 with your sigmoid calculation.
+
+    def train(self, features, targets):
+        ''' Train the network on batch of features and targets.
+
+            Arguments
+            ---------
+            features: 2D array, each row is one data record, each column is a feature
+            targets: 1D array of target values
+        '''
+        n_records = features.shape[0]
+        delta_weights_i_h = np.zeros(self.weights_input_to_hidden.shape)
+        delta_weights_h_o = np.zeros(self.weights_hidden_to_output.shape)
+        for X, y in zip(features, targets):
+            final_outputs, hidden_outputs = self.forward_pass_train(X)  # Implement the forward pass function below
+            delta_weights_i_h, delta_weights_h_o = self.backpropagation(final_outputs, hidden_outputs, X, y,
+                                                                        delta_weights_i_h, delta_weights_h_o)
+        self.update_weights(delta_weights_i_h, delta_weights_h_o, n_records)
 
 
-x = np.array([0.5, 0.1, -0.2])
-target = 0.6
-learnrate = 0.5
+    def forward_pass_train(self, X):
+        hidden_inputs = np.matmul(X, self.weights_input_to_hidden)  # signals into hidden layer
+        hidden_outputs = self.activation_function(hidden_inputs)  # signals from hidden layer
 
+        final_inputs = np.matmul(hidden_outputs, self.weights_hidden_to_output)  # signals into final output layer
+        final_outputs = final_inputs  # Regression problem, no activation function
 
-# Shape here is input x neurons
-weights_input_hidden = np.array([[0.5, -0.6],
-                                 [0.1, -0.2],
-                                 [0.1, 0.7]])
+        return final_outputs, hidden_outputs
 
-# Explicitly, this should be a column vector as there is only one neuron in output.
-weights_hidden_output = np.array([0.1, -0.3])
+    def backpropagation(self, final_outputs, hidden_outputs, X, y, delta_weights_i_h, delta_weights_h_o):
+        ''' Implement backpropagation
 
-## Forward pass
-hidden_layer_input = np.dot(x, weights_input_hidden)
-hidden_layer_output = sigmoid(hidden_layer_input)
+            Arguments
+            ---------
+            final_outputs: output from forward pass
+            y: target (i.e. label) batch
+            delta_weights_i_h: change in weights from input to hidden layers
+            delta_weights_h_o: change in weights from hidden to output layers
+        '''
 
-output_layer_in = np.dot(hidden_layer_output, weights_hidden_output)
-output = sigmoid(output_layer_in)
+        error = y - final_outputs  # Output layer error is the difference between desired target and actual output.
+        output_error_term = error  # No multiply by derivative of sigmoid since regression problem
+        hidden_error = self.weights_hidden_to_output.dot(output_error_term)  # element-wise
+        hidden_error_term = hidden_error * hidden_outputs * (1 - hidden_outputs)
+        delta_weights_i_h += np.outer(X, hidden_error_term)
+        delta_weights_h_o += np.outer(hidden_outputs, output_error_term)
+        return delta_weights_i_h, delta_weights_h_o
 
-## Backwards pass
-## TODO: Calculate output error
-error = target - output
-
-# TODO: Calculate error term for output layer
-output_error_term = error * output * (1 - output)
-
-# TODO: Calculate error term for hidden layer (sigmoid activation)
-
-# OET shape is ()    # scalar
-# WHO shape is (2,)  # defined above
-# dot argument shapes are (hidden, output) and (output, 1)
-hidden_error_term = np.dot(weights_hidden_output, output_error_term) * \
-                    hidden_layer_output * (1 - hidden_layer_output)
-
-# HET shape is (2,)
-
-# TODO: Calculate change in weights for hidden layer to output layer
-delta_w_h_o = learnrate * output_error_term * hidden_layer_output
-
-# TODO: Calculate change in weights for input layer to hidden layer
-delta_w_i_h = learnrate * np.outer(x, hidden_error_term)
-
-print('Change in weights for hidden layer to output layer:')
-print(delta_w_h_o)
-print('Change in weights for input layer to hidden layer:')
-print(delta_w_i_h)
-
-# delta_w_i_h.shape == (3, 2)
+    def update_weights(self, delta_weights_i_h, delta_weights_h_o, n_records):
+        self.weights_hidden_to_output += self.lr * delta_weights_h_o  # update hidden-to-output weights with gradient descent step
+        self.weights_input_to_hidden  += self.lr * delta_weights_i_h  # update input-to-hidden weights with gradient descent step
 ```
 
 ## Multi-layer backprop
 
 Real-world example with more than one training set record.
 
-Use `np.outer()` to calculate the <img src="/notes/tex/8d9b176fd459e329c57782488a188936.svg?invert_in_darkmode&sanitize=true" align=middle width=31.50693314999999pt height=22.465723500000017pt/> matrix from the inputs and the layer's error term:
+This may not be as good in the internals as the above example, but has some extra functionality.
 
 
 ```
